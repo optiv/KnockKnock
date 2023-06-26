@@ -18,7 +18,7 @@ $ python3 .\KnockKnock.py -h
  | ' /| '_ \ / _ \ / __| |/ / ' /| '_ \ / _ \ / __| |/ /
  | . \| | | | (_) | (__|   <| . \| | | | (_) | (__|   <
  |_|\_\_| |_|\___/ \___|_|\_\_|\_\_| |_|\___/ \___|_|\_\
-   v0.9                             Author: #Waffl3ss
+   v0.9                             Author: @waffl3ss
 
 
 usage: KnockKnock.py [-h] [-teams] [-onedrive] [-l] -i INPUTLIST [-o OUTPUTFILE] -d TARGETDOMAIN [-t TEAMSTOKEN] [-threads MAXTHREADS] [-v]
