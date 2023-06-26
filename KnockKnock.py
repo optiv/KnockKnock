@@ -11,7 +11,7 @@ banner = """
  | ' /| '_ \ / _ \ / __| |/ / ' /| '_ \ / _ \ / __| |/ /
  | . \| | | | (_) | (__|   <| . \| | | | (_) | (__|   < 
  |_|\_\_| |_|\___/ \___|_|\_\_|\_\_| |_|\___/ \___|_|\_\\
-   v0.9                             Author: #Waffl3ss \n\n"""
+   v0.9                             Author: @waffl3ss \n\n"""
 print(banner)
 
 parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
