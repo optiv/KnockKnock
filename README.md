@@ -64,8 +64,5 @@ You can copy the whole token as the script will split out the required part for 
 ------------------------------------------------------------------------------------
 # References
 
-[@nyxgeek](https://github.com/nyxgeek)  
-[onedrive_user_enum](https://github.com/nyxgeek/onedrive_user_enum)  
-  
-[@immunIT](https://github.com/immunIT)  
-[TeamsUserEnum](https://github.com/immunIT/TeamsUserEnum)  
+[@nyxgeek](https://github.com/nyxgeek) - [onedrive_user_enum](https://github.com/nyxgeek/onedrive_user_enum)  
+[@immunIT](https://github.com/immunIT) - [TeamsUserEnum](https://github.com/immunIT/TeamsUserEnum)  
