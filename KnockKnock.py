@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 parser.add_argument('-teams', dest='runTeams', required=False, default=False, help="Run the Teams User Enumeration Module", action="store_true")
 parser.add_argument('-onedrive', dest='runOneDrive', required=False, default=False, help="Run the One Drive Enumeration Module", action="store_true")
 parser.add_argument('-l', dest='teamsLegacy', required=False, default=False, help="Write legacy skype users to a seperate file", action="store_true")
-parser.add_argument('-i', dest='inputList', type=argparse.FileType('r'), required=True, default='', help="Input file with newline-seperated users to check")
+parser.add_argument('-i', dest='inputList', type=argparse.FileType('r'), required=False, default=None, help="Input file with newline-separated users to check. (If not provided, statistically likely usernames will be used by default.)")
 parser.add_argument('-o', dest='outputfile', type=str, required=False, default='', help="Write output to file")
 parser.add_argument('-d', dest='targetDomain', type=str, required=True, default='', help="Domain to target")
 parser.add_argument('-t', dest='teamsToken', required=False, default='', help="Teams Token (file containing token or a string)")
@@ -43,8 +43,61 @@ nameList = []
 validNames = []
 legacyNames = []
 
-for name in args.inputList.readlines():
-    inputNames.append(name)
+def getStatisticallyLikelyUsernames():
+    print("[!] No input list found, defaulting to Statistically Likely Usernames")
+    print("[+] Please select format (Default: john.smith): \n")
+
+    print("[1] john.smith")
+    print("[2] john")
+    print("[3] johnjs")
+    print("[4] johns")
+    print("[5] johnsmith")
+    print("[6] jsmith")
+    print("[7] smith")
+    print("[8] smithj")
+    print("[9] john_smith")
+    print("[10] j.smith")
+
+    choice = input('\n> ')
+
+    if int(choice) > 10:
+        print("[!] Choice must be less than 10")
+        sys.exit()
+
+    username_formats = [
+        "john.smith",
+        "john",
+        "johnjs",
+        "johns",
+        "johnsmith",
+        "jsmith",
+        "smith",
+        "smithj",
+        "john_smith",
+        "j.smith"
+    ]
+
+    selected_format = username_formats[int(choice) - 1]
+
+    url = f"https://raw.githubusercontent.com/Flangvik/statistically-likely-usernames/master/{selected_format}.txt"
+
+    try:
+        gitRequest = requests.get(url)
+        gitRequest.raise_for_status()
+        usernames = gitRequest.text.strip().split('\n')
+    except requests.exceptions.RequestException as e:
+        print("[!] Error retrieving statistically likely usernames")
+        if args.verboseMode:
+            print("[V] " + str(e))
+        sys.exit()
+
+    return usernames
+
+if args.inputList is None:
+    inputNames = getStatisticallyLikelyUsernames()
+else:
+    for name in args.inputList.readlines():
+        inputNames.append(name)
 
 def OneDriveEnumerator():
     tenantData = f"""<?xml version="1.0" encoding="utf-8"?>

@@ -13,22 +13,22 @@ Finally, it also creates a nice clean list for future usage, all conducted from 
 ```
 $ python3 .\KnockKnock.py -h
 
-  _  __                 _    _  __                 _
+  _  __                 _    _  __                 _    
  | |/ /_ __   ___   ___| | _| |/ /_ __   ___   ___| | __
  | ' /| '_ \ / _ \ / __| |/ / ' /| '_ \ / _ \ / __| |/ /
- | . \| | | | (_) | (__|   <| . \| | | | (_) | (__|   <
+ | . \| | | | (_) | (__|   <| . \| | | | (_) | (__|   < 
  |_|\_\_| |_|\___/ \___|_|\_\_|\_\_| |_|\___/ \___|_|\_\
-   v0.9                             Author: @waffl3ss
+   v0.9                             Author: @waffl3ss   
 
 
-usage: KnockKnock.py [-h] [-teams] [-onedrive] [-l] -i INPUTLIST [-o OUTPUTFILE] -d TARGETDOMAIN [-t TEAMSTOKEN] [-threads MAXTHREADS] [-v]
+usage: KnockKnock.py [-h] [-teams] [-onedrive] [-l] [-i INPUTLIST] [-o OUTPUTFILE] -d TARGETDOMAIN [-t TEAMSTOKEN] [-threads MAXTHREADS] [-v]      
 
-options:
+optional arguments:
   -h, --help           show this help message and exit
   -teams               Run the Teams User Enumeration Module
   -onedrive            Run the One Drive Enumeration Module
   -l                   Write legacy skype users to a seperate file
-  -i INPUTLIST         Input file with newline-seperated users to check
+  -i INPUTLIST         Input file with newline-separated users to check. (If not provided, statistically likely usernames will be used by default.)
   -o OUTPUTFILE        Write output to file
   -d TARGETDOMAIN      Domain to target
   -t TEAMSTOKEN        Teams Token (file containing token or a string)
@@ -39,6 +39,7 @@ options:
 ### Examples
 
 ```
+./KnockKnock.py -teams -d Example.com -o OutFile.txt -t BearerToken.txt
 ./KnockKnock.py -teams -i UsersList.txt -d Example.com -o OutFile.txt -t BearerToken.txt
 ./KnockKnock.py -onedrive -i UsersList.txt -d Example.com -o OutFile.txt
 ./KnockKnock.py -onedrive -teams -i UsersList.txt -d Example.com -t BearerToken.txt -l
@@ -48,8 +49,8 @@ options:
 # Options
 
  - You can select one or both modes, as long as the appropriate options are provided for the modules selected.  
- - Both modules will require the domain flag (-d) and the user input list (-i).  
- - The tool does not require an output file as an option, and if not supplied, it will print to screen only.  
+ - Both modules will require the domain flag (-d).
+ - The tool can be used without providing an input file option, and if not supplied, it will utilize the Statistically Likely Usernames list from GitHub. Similarly, it does not require an output file option, and if not specified, the results will be printed to the screen only.
  - The verbose mode will show A LOT of extra information, including users that are not valid.  
  - The Teams option requires a bearer token. The script automatically removes the beginning and end portions to use only whats required.  
 
