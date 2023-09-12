@@ -6,12 +6,12 @@ from argparse import RawTextHelpFormatter
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 banner = """
-  _  __                 _    _  __                 _    
+  _  __                 _    _  __                 _
  | |/ /_ __   ___   ___| | _| |/ /_ __   ___   ___| | __
  | ' /| '_ \ / _ \ / __| |/ / ' /| '_ \ / _ \ / __| |/ /
- | . \| | | | (_) | (__|   <| . \| | | | (_) | (__|   < 
+ | . \| | | | (_) | (__|   <| . \| | | | (_) | (__|   <
  |_|\_\_| |_|\___/ \___|_|\_\_|\_\_| |_|\___/ \___|_|\_\\
-   v0.9                             Author: @waffl3ss \n\n"""
+   v0.9.1                           Author: @waffl3ss \n\n"""
 print(banner)
 
 parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -29,11 +29,11 @@ args = parser.parse_args()
 if not args.runTeams and not args.runOneDrive:
     print("[!] You must select one enumeration module, Teams or OneDrive... Exiting...")
     sys.exit()
-    
+
 if args.runTeams and args.teamsToken == '':
     print("[!] Teams Bearer Token required for Teams enumeration, Exiting...")
     sys.exit()
-    
+
 if args.teamsLegacy and args.outputfile == '':
     print("[!] Teams Legacy Output requires the output file option (-o). Exiting...")
     sys.exit()
@@ -107,7 +107,7 @@ def OneDriveEnumerator():
                 print("[V] " + str(e))
             pass
 
-def teamsEnum(potentialUserNameTeams):       
+def teamsEnum(potentialUserNameTeams):
     if args.verboseMode:
         print("[V] Testing user %s" % potentialUserNameTeams)
 
@@ -125,7 +125,7 @@ def teamsEnum(potentialUserNameTeams):
 
     initHeaders = {
         "Host": "teams.microsoft.com",
-        "Authorization": "Bearer " + str(theToken),
+        "Authorization": "Bearer " + theToken.strip(),
         "X-Ms-Client-Version": str(CLIENT_VERSION),
     }
 
@@ -135,17 +135,26 @@ def teamsEnum(potentialUserNameTeams):
         validNames.append(str(potentialUserNameTeams.split("@")[0]))
 
     elif initRequest.status_code == 404:
-        print("[!] Error with username")
+        print("[!] Error with username - %" % str(potentialUserNameTeams))
 
     elif initRequest.status_code == 200:
         statusLevel = json.loads(initRequest.text)
+
         if statusLevel:
-            print("[+] %s -- Legacy Skype Detected" % potentialUserNameTeams)
-            validNames.append(str(potentialUserNameTeams.split("@")[0]))
-            legacyNames.append(str(potentialUserNameTeams.split("@")[0]))
-            if args.verboseMode:
-                print(json.dumps(statusLevel, indent=2))
-        elif not statusLevel:
+            if "skypeId" in statusLevel[0]:
+                print("[+] %s -- Legacy Skype Detected" % potentialUserNameTeams)
+                validNames.append(str(potentialUserNameTeams.split("@")[0]))
+                legacyNames.append(str(potentialUserNameTeams.split("@")[0]))
+                if args.verboseMode:
+                    print(json.dumps(statusLevel, indent=2))
+
+            else:
+                print("[+] %s" % potentialUserNameTeams)
+                validNames.append(str(potentialUserNameTeams.split("@")[0]))
+                if args.verboseMode:
+                    print(json.dumps(statusLevel, indent=2))
+
+        else:
             if args.verboseMode:
                 print("[-] %s" % potentialUserNameTeams)
 
@@ -154,13 +163,13 @@ def teamsEnum(potentialUserNameTeams):
         sys.exit()
 
 def main():
-    global nameList    
+    global nameList
     for name in inputNames:
         if "@" in name:
             name = name.split("@")[0]
             nameList.append(name.strip())
         else:
-            nameList.append(name.strip())            
+            nameList.append(name.strip())
     nameList = list(dict.fromkeys(nameList))
 
     if args.runOneDrive:
