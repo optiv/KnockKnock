@@ -132,9 +132,9 @@ def main():
     for name in inputNames:
         if "@" in name:
             name = name.split("@")[0]
-            nameList.append(name.strip())
+            nameList.append(name.strip().lower())
         else:
-            nameList.append(name.strip())
+            nameList.append(name.strip().lower())
     nameList = list(dict.fromkeys(nameList))
 
     if args.runOneDrive:
