@@ -1,9 +1,10 @@
-# KnockKnock - v0.9.5 - [@waffl3ss](https://github.com/waffl3ss)
+# KnockKnock - v0.9.9 - [@waffl3ss](https://github.com/waffl3ss)
 
 #### Please make sure to actually utilize the README. 
 
 Designed to validate potential usernames by querying OneDrive and/or Microsoft Teams, which are passive methods.  
-Additionally, it can output/create a list of legacy Skype users identified through Microsoft Teams enumeration.  
+It can output/create a list of legacy Skype users identified through Microsoft Teams enumeration.
+It can also get details from Teams, such as availability, device type, and out of office message.
 Finally, it also creates a nice clean list for future usage, all conducted from a single tool.  
 
 ------------------------------------------------------------------------------------
@@ -18,7 +19,7 @@ $ python3 .\KnockKnock.py -h
  | ' /| '_ \ / _ \ / __| |/ / ' /| '_ \ / _ \ / __| |/ /
  | . \| | | | (_) | (__|   <| . \| | | | (_) | (__|   <
  |_|\_\_| |_|\___/ \___|_|\_\_|\_\_| |_|\___/ \___|_|\_\
-   v0.9.5                                   @waffl3ss
+   v0.9.9                                   @waffl3ss
 
 
 usage: KnockKnock.py [-h] [-teams] [-onedrive] [-l] -i INPUTLIST [-o OUTPUTFILE] -d TARGETDOMAIN [-t TEAMSTOKEN] [-threads MAXTHREADS] [-v]
@@ -28,6 +29,7 @@ options:
   -teams               Run the Teams User Enumeration Module
   -onedrive            Run the One Drive Enumeration Module
   -l                   Write legacy skype users to a seperate file
+  -s                   Write Teams Status for users to a seperate file
   -i INPUTLIST         Input file with newline-seperated users to check
   -o OUTPUTFILE        Write output to file
   -d TARGETDOMAIN      Domain to target
@@ -51,7 +53,9 @@ options:
  - Both modules will require the domain flag (-d) and the user input list (-i).  
  - The tool does not require an output file as an option, and if not supplied, it will print to screen only.  
  - The verbose mode will show A LOT of extra information, including users that are not valid.  
- - The Teams option requires a bearer token. The script automatically removes the beginning and end portions to use only whats required.  
+ - The Teams option requires a bearer token. The script automatically parses the token to get whats needed for authentication.
+ - The LEGACY (-l) option shows users that still have SkypeID settings and will write it to a seperate file
+ - The STATUS (-s) option shows user teams availability, device, and OutOfOffice message, then writes it to a seperate file.
 
 ------------------------------------------------------------------------------------
 # How to get your Bearer token
