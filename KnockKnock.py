@@ -11,13 +11,14 @@ banner = """
  | ' /| '_ \ / _ \ / __| |/ / ' /| '_ \ / _ \ / __| |/ /
  | . \| | | | (_) | (__|   <| . \| | | | (_) | (__|   <
  |_|\_\_| |_|\___/ \___|_|\_\_|\_\_| |_|\___/ \___|_|\_\\
-    v0.9.5                                  @waffl3ss \n\n"""
+    v0.9.9                                  @waffl3ss \n\n"""
 print(banner)
 
 parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
 parser.add_argument('-teams', dest='runTeams', required=False, default=False, help="Run the Teams User Enumeration Module", action="store_true")
 parser.add_argument('-onedrive', dest='runOneDrive', required=False, default=False, help="Run the One Drive Enumeration Module", action="store_true")
 parser.add_argument('-l', dest='teamsLegacy', required=False, default=False, help="Write legacy skype users to a seperate file", action="store_true")
+parser.add_argument('-s', dest='teamsStatus', required=False, default=False, help="Write Teams Status for users to a seperate file", action="store_true")
 parser.add_argument('-i', dest='inputList', type=argparse.FileType('r'), required=True, default='', help="Input file with newline-seperated users to check")
 parser.add_argument('-o', dest='outputfile', type=str, required=False, default='', help="Write output to file")
 parser.add_argument('-d', dest='targetDomain', type=str, required=True, default='', help="Domain to target")
@@ -38,10 +39,15 @@ if args.teamsLegacy and args.outputfile == '':
     print("[!] Teams Legacy Output requires the output file option (-o). Exiting...")
     sys.exit()
 
+if args.teamsStatus and args.outputfile == '':
+    print("[!] Teams Status Output requires the output file option (-o). Exiting...")
+    sys.exit()
+
 inputNames = []
 nameList = []
 validNames = []
 legacyNames = []
+statusNames = []
 
 for name in args.inputList.readlines():
     inputNames.append(name)
@@ -65,6 +71,50 @@ def OneDriveEnumerator(targetTenant, potentialNameOD):
             print("[V] " + str(e))
         pass
 
+def getPresence(mri, bearer):
+    URL_PRESENCE_TEAMS = "https://presence.teams.microsoft.com/v1/presence/getpresence/"
+    CLIENT_VERSION = "27/1.0.0.2021011237"
+
+    initHeaders = {
+        "x-ms-client-version": "CLIENT_VERSION",
+        "Authorization": "Bearer " + bearer,
+        "Content-Type": "application/json",
+    }   
+
+    json_data = json.dumps([{"mri": mri}])
+    
+    try:
+        response = requests.post(URL_PRESENCE_TEAMS, data=json_data, headers=initHeaders)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error on response. [ERROR] - {e}")
+        return None, None
+
+    try:
+        status = response.json()
+
+        try:
+            availability = status[0]['presence']['availability']
+        except (KeyError, IndexError, TypeError):
+            availability = None
+
+        try:
+            device_type = status[0]['presence']['deviceType']
+        except (KeyError, IndexError, TypeError):
+            device_type = None
+
+        try:
+            out_of_office_note = str(status[0]['presence'].get('calendarData', {}).get('outOfOfficeNote', {}).get('message'))
+        except (KeyError, IndexError, TypeError):
+            out_of_office_note = None
+        
+        return availability, device_type, out_of_office_note
+    
+    except (json.JSONDecodeError, KeyError, IndexError) as e:
+        print(f"Error parsing response JSON [ERROR] - {e}")
+        return None, None, None
+
+
 def teamsEnum(potentialUserNameTeams):
     try:
         if args.verboseMode:
@@ -81,7 +131,6 @@ def teamsEnum(potentialUserNameTeams):
 
         if "Bearer" in theToken:
             theToken = theToken.replace("Bearer%3D","").replace("%26Origin%3Dhttps%3A%2F%2Fteams.microsoft.com","")
-
         initHeaders = {
             "Host": "teams.microsoft.com",
             "Authorization": "Bearer " + theToken.strip(),
@@ -107,13 +156,23 @@ def teamsEnum(potentialUserNameTeams):
                     legacyNames.append(str(potentialUserNameTeams.split("@")[0]))
                     if args.verboseMode:
                         print(json.dumps(statusLevel, indent=2))
-
                 else:
-                    print("[+] %s" % potentialUserNameTeams)
-                    validNames.append(str(potentialUserNameTeams.split("@")[0]))
-                    if args.verboseMode:
-                        print(json.dumps(statusLevel, indent=2))
+                    if not args.teamsStatus:
+                        print("[+] %s" % potentialUserNameTeams)
+                        validNames.append(str(potentialUserNameTeams.split("@")[0]))
+                        if args.verboseMode:
+                            print(json.dumps(statusLevel, indent=2))
 
+                if args.teamsStatus:
+                    mriStatus = statusLevel[0].get("mri")
+                    availability, device_type, out_of_office_note = getPresence(mriStatus, theToken)
+                    if out_of_office_note is None:
+                        print(f"[+] %s -- %s -- %s" % (potentialUserNameTeams, availability, device_type))
+                        statusNames.append(f"{potentialUserNameTeams} -- {availability} -- {device_type}")
+                    if out_of_office_note is not None:
+                        print("[+] %s -- %s -- %s -- %s" % (potentialUserNameTeams, availability, device_type, repr(out_of_office_note)))
+                        statusNames.append(f"{potentialUserNameTeams} -- {availability} -- {device_type} -- {repr(out_of_office_note)}")
+                    validNames.append(str(potentialUserNameTeams.split("@")[0]))
             else:
                 if args.verboseMode:
                     print("[-] %s" % potentialUserNameTeams)
@@ -136,6 +195,9 @@ def main():
         else:
             nameList.append(name.strip().lower())
     nameList = list(dict.fromkeys(nameList))
+
+    if args.teamsStatus:
+        print("Username -- Availability -- Device Type -- Out of Office Note\n")
 
     if args.runOneDrive:
         try:
@@ -277,6 +339,34 @@ def main():
                     print("[-] Not overwriting legacy skype users file")
         else:
             print("[-] No legacy skype users identified")
+
+    if args.teamsStatus:
+        if statusNames:
+            if args.outputfile != '':
+                statusOutFile = "Status_" + str(args.outputfile)
+                statusOverwriteFile = True
+
+                if Path.exists(Path(statusOutFile)):
+                    statusOverwriteChoice = input("[!] Status Output File exists, overwrite? [Y/n] ")
+                    if statusOverwriteChoice == "y" or "Y" or "":
+                        statusOverwriteFile = True
+                        Path(statusOutFile).unlink(missing_ok=True)
+                    else:
+                        statusOverwriteFile = False
+
+                if statusOverwriteFile:
+                    titleLine = "Username -- Availability -- Device Type -- Out of Office Note\n"
+                    with open(statusOutFile, "a+") as statusOut:
+                        statusOut.write(titleLine)
+                    if args.verboseMode:
+                        print("[V] Found %i Users with status information, creating file with names" % len(statusNames))
+                    statusNamesUniq = list(dict.fromkeys(statusNames))
+                    with open(statusOutFile, "a+") as statusOut:
+                        for statusName in statusNamesUniq:
+                            statusOut.write(statusName + "\n")
+                    statusOut.close()
+                else:
+                    print("[-] Not overwriting status file")
 
 if __name__ == "__main__":
     main()
