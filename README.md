@@ -5,7 +5,6 @@ To view the latest version of KnockKnock or to submit an issue, reference https:
 ------------------------------------------------------------------------------------
 
 # KnockKnock - v0.9.9
-# Package is now maintained at [@waffl3ss](https://github.com/waffl3ss/KnockKnock)
 
 #### Please make sure to actually utilize the README. 
 
