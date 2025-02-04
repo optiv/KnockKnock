@@ -1,4 +1,11 @@
-# KnockKnock - v0.9.9 - [@waffl3ss](https://github.com/waffl3ss)
+# THIS REPOSITORY HAS BEEN ARCHIVED
+
+To view the latest version of KnockKnock or to submit an issue, reference https://github.com/waffl3ss/KnockKnock.
+
+------------------------------------------------------------------------------------
+
+# KnockKnock - v0.9.9
+# Package is now maintained at [@waffl3ss](https://github.com/waffl3ss/KnockKnock)
 
 #### Please make sure to actually utilize the README. 
 
